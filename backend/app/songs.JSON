@@ -1,0 +1,106 @@
+[
+  {
+    "singer": "Beatles",
+    "name": "hey_jude",
+    "content": [
+      [
+        { "lyrics": "Hey" },
+        { "lyrics": "Jude", "chords": "F" },
+        { "lyrics": "don't" },
+        { "lyrics": "make" },
+        { "lyrics": "it" },
+        { "lyrics": "bad", "chords": "C" }
+      ],
+      [
+        { "lyrics": "Take" },
+        { "lyrics": "a" },
+        { "lyrics": "sad", "chords": "C7" },
+        { "lyrics": "song", "chords": "C4/7" },
+        { "lyrics": "and" },
+        { "lyrics": "make" },
+        { "lyrics": "it" },
+        { "lyrics": "better", "chords": "F" }
+      ],
+      [
+        { "lyrics": "Remember", "chords": "Bb" },
+        { "lyrics": "to" },
+        { "lyrics": "let" },
+        { "lyrics": "her" },
+        { "lyrics": "into" },
+        { "lyrics": "your" },
+        { "lyrics": "heart", "chords": "F" }
+      ],
+      [
+        { "lyrics": "Then" },
+        { "lyrics": "you" },
+        { "lyrics": "can" },
+        { "lyrics": "start", "chords": "C" },
+        { "lyrics": "to" },
+        { "lyrics": "make", "chords": "C7" },
+        { "lyrics": "it" },
+        { "lyrics": "better", "chords": "F" }
+      ]
+    ]
+  },
+  {
+    "singer": "Elton John",
+    "name": "your_song",
+    "content": [
+      [
+        { "lyrics": "It's" },
+        { "lyrics": "a" },
+        { "lyrics": "little", "chords": "C" },
+        { "lyrics": "bit", "chords": "Am" },
+        { "lyrics": "funny" }
+      ],
+      [
+        { "lyrics": "This" },
+        { "lyrics": "feeling", "chords": "F" },
+        { "lyrics": "inside", "chords": "G" }
+      ]
+    ]
+  },
+  {
+    "singer": "Queen",
+    "name": "bohemian_rhapsody",
+    "content": [
+      [
+        { "lyrics": "Is" },
+        { "lyrics": "this" },
+        { "lyrics": "the" },
+        { "lyrics": "real", "chords": "C" },
+        { "lyrics": "life" }
+      ],
+      [
+        { "lyrics": "Is" },
+        { "lyrics": "this" },
+        { "lyrics": "just" },
+        { "lyrics": "fantasy", "chords": "F" }
+      ]
+    ]
+  },
+  {
+    "singer": "Bob Dylan",
+    "name": "blowin_in_the_wind",
+    "content": [
+      [
+        { "lyrics": "How" },
+        { "lyrics": "many" },
+        { "lyrics": "roads", "chords": "G" },
+        { "lyrics": "must" },
+        { "lyrics": "a" },
+        { "lyrics": "man", "chords": "C" },
+        { "lyrics": "walk", "chords": "D" },
+        { "lyrics": "down" }
+      ],
+      [
+        { "lyrics": "Before" },
+        { "lyrics": "you" },
+        { "lyrics": "call", "chords": "G" },
+        { "lyrics": "him", "chords": "C" },
+        { "lyrics": "a" },
+        { "lyrics": "man", "chords": "D" }
+      ]
+    ]
+  }
+]

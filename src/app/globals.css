@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 255, 255, 255;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* Smooth scrolling for auto-scroll feature */
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* High contrast text for lyrics */
+.lyrics {
+  font-size: 1.5rem;
+  line-height: 2;
+  font-weight: 500;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
+}

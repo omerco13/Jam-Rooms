@@ -1,0 +1,8 @@
+{
+  "/page": "app/page.js",
+  "/room/[code]/page": "app/room/[code]/page.js",
+  "/room/[code]/live/page": "app/room/[code]/live/page.js",
+  "/join-room/page": "app/join-room/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/create-room/page": "app/create-room/page.js"
+}
