@@ -1,8 +1,3 @@
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-
 from fastapi import FastAPI, HTTPException, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -13,8 +8,6 @@ from sqlalchemy.orm import Session
 from app.song_search import search_songs_by_query
 import socketio
 from app.socket_manager import sio
-import eventlet
-import eventlet.wsgi
 
 app = FastAPI()
 
@@ -102,10 +95,5 @@ def search_songs(q: str):
 def read_root():
     return {"message": "Welcome to JaMoveo API"}
 
-app = socketio.WSGIApp(sio, app)
-
-if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 10000))
-    eventlet.wsgi.server(eventlet.listen(('0.0.0.0', port)), app)
+app = socketio.ASGIApp(sio, other_asgi_app=app)
 
