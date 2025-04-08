@@ -102,7 +102,7 @@ def search_songs(q: str):
 def read_root():
     return {"message": "Welcome to JaMoveo API"}
 
-app = socketio.ASGIApp(sio, other_asgi_app=app)
+app = socketio.WSGIApp(sio, other_asgi_app=app)
 
 if __name__ == "__main__":
     import os
