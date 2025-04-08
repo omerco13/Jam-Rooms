@@ -1,4 +1,4 @@
-// File: C:\omer\projects\project1\ja-moveo\src\app\create-room\page.tsx
+// File: C:\omer\projects\Jam-Rooms\src\app\create-room\page.tsx
 import * as entry from '../../../../src/app/create-room/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
