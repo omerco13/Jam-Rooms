@@ -101,5 +101,9 @@ def search_songs(q: str):
 def read_root():
     return {"message": "Welcome to JaMoveo API"}
 
+from app.database import engine
+from app.models import Base
+Base.metadata.create_all(bind=engine)
+
 app = socketio.ASGIApp(sio, other_asgi_app=app)
 
