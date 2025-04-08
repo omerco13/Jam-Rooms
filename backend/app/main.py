@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from app.song_search import search_songs_by_query
 import socketio
 from app.socket_manager import sio
+import eventlet
+import eventlet.wsgi
 
 app = FastAPI()
 
@@ -96,4 +98,9 @@ def read_root():
     return {"message": "Welcome to JaMoveo API"}
 
 app = socketio.ASGIApp(sio, other_asgi_app=app)
+
+if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 10000))
+    eventlet.wsgi.server(eventlet.listen(('0.0.0.0', port)), app)
 
