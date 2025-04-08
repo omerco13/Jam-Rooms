@@ -4,7 +4,12 @@ from app.models import Room, Person
 
 sio = socketio.AsyncServer(
     async_mode='asgi',
-    cors_allowed_origins=["http://localhost:3000", "https://jam-rooms.vercel.app"]
+    cors_allowed_origins=[
+        "http://localhost:3000",
+        "https://jam-rooms.vercel.app",
+        "https://jam-rooms-omer-cohens-projects.vercel.app",
+        "https://jam-rooms-a4a29jfdu-omer-cohens-projects.vercel.app"
+    ]
 )
 
 @sio.event

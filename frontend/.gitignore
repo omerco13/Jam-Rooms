@@ -1,6 +1,7 @@
 node_modules/
 .env
 .env.local
+.next
 # # dependencies
 # /node_modules
 # /.pnp
