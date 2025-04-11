@@ -7,10 +7,9 @@ import {
   Container, Box, Typography, Button, FormControl, InputLabel,
   Select, MenuItem, Paper, TextField
 } from '@mui/material';
-
+import { getRooms } from '@/utils/api';
 
 const instruments = ['Guitar', 'Piano', 'Bass', 'Drums', 'Singer'];
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function JoinRoomPage() {
   const router = useRouter();
@@ -41,8 +40,7 @@ export default function JoinRoomPage() {
   useEffect(() => {
     const fetchRooms = async () => {
       try {
-        const response = await fetch(`${API_URL}/rooms/`);
-        const data = await response.json();
+        const data = await getRooms();
         setAvailableRooms(data.rooms);
       } catch (error) {
         console.error('Error fetching rooms:', error);

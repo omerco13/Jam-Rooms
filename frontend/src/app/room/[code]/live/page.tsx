@@ -6,22 +6,6 @@ import { useRef, useEffect, useState } from 'react';
 import { Container, Box, Paper, Typography, Button } from '@mui/material';
 import { Person, Song} from '@/types';
 
-// type LineChunk = { lyrics: string; chords?: string };
-// type SongContent = LineChunk[][];
-
-// type Person = {
-//   id: number;
-//   name: string;
-//   instrument: string;
-//   role: string;
-// };
-
-// type Song = {
-//   name: string;
-//   singer: string;
-//   content: SongContent;
-// };
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function LivePage() {

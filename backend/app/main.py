@@ -8,10 +8,9 @@ from sqlalchemy.orm import Session
 from app.song_search import search_songs_by_query
 import socketio
 from app.socket_manager import sio
-
+import random, string
 app = FastAPI()
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -28,8 +27,6 @@ app.add_middleware(
 
 @app.post("/rooms/")
 async def create_room(request: CreateRoomRequest, db: Session = Depends(get_db)):
-    import random, string
-    from app.socket_manager import sio
     room_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
     new_room = Room(room_code=room_code, admin=request.name)
     db.add(new_room)
@@ -45,7 +42,6 @@ async def create_room(request: CreateRoomRequest, db: Session = Depends(get_db))
             "room_code": room_code,
             "user_id": new_person.id,
         }, to=request.sid)
-
     return {"room_code": room_code}
 
 @app.get("/rooms/")
@@ -60,20 +56,17 @@ def get_room_details(
     user_id: int = Query(None)
 ):
     room = db.query(Room).filter(Room.room_code == room_code).first()
-    if not room:
-        raise HTTPException(status_code=404, detail="Room not found")
     participants = db.query(Person).filter(Person.room_code == room_code).all()
     people = [{"id": p.id, "name": p.name, "instrument": p.instrument, "role": p.role} for p in participants]
     me = None
-    if user_id:
-        person = db.query(Person).filter(Person.id == user_id, Person.room_code == room_code).first()
-        if person:
-            me = {
-                "id": person.id,
-                "name": person.name,
-                "instrument": person.instrument,
-                "role": person.role
-            }
+    person = db.query(Person).filter(Person.id == user_id, Person.room_code == room_code).first()
+    if person:
+        me = {
+            "id": person.id,
+            "name": person.name,
+            "instrument": person.instrument,
+            "role": person.role
+        }
     current_song = None
     if room.current_song_id:
         song = db.query(Song).filter(Song.id == room.current_song_id).first()

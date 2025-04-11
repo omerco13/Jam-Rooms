@@ -7,7 +7,7 @@ import { useRoomSocket } from '@/hooks/useRoomSocket';
 import { socketManager } from '@/utils/socket';
 import { Song, RoomDetails } from '@/types';
 import { getRoomDetails } from '@/utils/api';
-
+import { searchSongs } from '@/utils/api';
 
 export default function RoomPage() {
   const { code } = useParams();
@@ -40,11 +40,9 @@ export default function RoomPage() {
     router.push('/');
   };
 
-  async function searchSongs() {
+  async function handleSearch() {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/songs/search?q=${query}`);
-      if (!res.ok) throw new Error('Search failed');
-      const data = await res.json();
+      const data = await searchSongs(query);
       setResults(data.results);
     } catch (err) {
       setError('Failed to search songs');
@@ -117,7 +115,7 @@ export default function RoomPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        <Button variant="contained" onClick={searchSongs}>
+        <Button variant="contained" onClick={handleSearch}>
           Search
         </Button>
       </Box>

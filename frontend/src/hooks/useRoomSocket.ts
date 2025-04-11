@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { socketManager } from '@/utils/socket';
 import { getRoomDetails } from '@/utils/api';
 
@@ -13,21 +13,16 @@ export function useRoomSocket({
   onSongSelected: () => void;
   onRoomClosed: () => void;
 }) {
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
-
   useEffect(() => {
     const socket = socketManager.getSocket() ?? socketManager.connect();
 
-    const handleParticipantsUpdated = () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(async () => {
+    const handleParticipantsUpdated = async() => {
         try {
           const data = await getRoomDetails(code);
           onRoomData(data);
         } catch (err) {
           console.error('Error updating participants:', err);
         }
-      }, 200);
     };
 
     const handleSongSelected = () => {
@@ -46,7 +41,7 @@ export function useRoomSocket({
       socket.off('participants_updated', handleParticipantsUpdated);
       socket.off('song_selected', handleSongSelected);
       socket.off('close_room', handleRoomClosed);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, [code]);
 }
+

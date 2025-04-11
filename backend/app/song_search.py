@@ -8,7 +8,6 @@ def load_songs() -> List[Dict[str, Any]]:
         songs = json.load(f)
     for i, song in enumerate(songs):
         song["id"] = i + 1
-
     return songs
 
 def search_songs_by_query(query: str) -> List[Dict[str, Any]]:
@@ -27,3 +26,21 @@ def search_songs_by_query(query: str) -> List[Dict[str, Any]]:
          any(word in song["singer"].lower() for word in query.split()))
     ]
     return exact_matches + partial_matches
+
+
+# from sqlalchemy.orm import Session
+# from app.models import Song
+
+# def search_songs_from_db(db: Session, query: str):
+#     query = f"%{query.lower()}%"
+#     results = db.query(Song).filter(
+#         (Song.name.ilike(query)) | (Song.singer.ilike(query))
+#     ).all()
+
+#     return [ {
+#         "id": song.id,
+#         "name": song.name,
+#         "singer": song.singer,
+#         "content": song.content
+#     } for song in results ]
+

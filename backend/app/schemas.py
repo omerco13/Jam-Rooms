@@ -4,7 +4,7 @@ from pydantic import BaseModel
 class CreateRoomRequest(BaseModel):
     name: str
     instrument: str
-    sid: Optional[str] = None
+    sid: Optional[str] = None # can i remove it?
 
 class JoinRoomRequest(BaseModel):
     name: str
@@ -26,7 +26,7 @@ class RoomResponse(BaseModel):
     people: List[PersonResponse] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class SongSelection(BaseModel):
     title: str
