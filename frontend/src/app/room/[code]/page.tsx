@@ -23,7 +23,8 @@ export default function RoomPage() {
   const [error, setError] = useState('');
 
   const goToLivePage = () => {
-  router.push(`/room/${code}/live?user_id=${userId}&instrument=${instrument}&name=${encodeURIComponent(userName ?? '')}`);};
+    router.push(`/room/${code}/live?user_id=${userId}&instrument=${instrument}&name=${encodeURIComponent(userName ?? '')}`);
+  };
 
   const handleRoomData = (data: RoomDetails) => {
     setRoom(data);
@@ -51,7 +52,7 @@ export default function RoomPage() {
 
   async function selectSong(song: Song) {
     const socket = socketManager.getSocket() ?? socketManager.connect();
-    localStorage.setItem('selectedSong', JSON.stringify(song));
+    localStorage.setItem('selectedSongId', String(song.id));
 
     socket.emit('select_song', {
       room_code: code,
@@ -68,23 +69,23 @@ export default function RoomPage() {
 
   function handleLeaveRoom() {
     const socket = socketManager.getSocket() ?? socketManager.connect();
-    socket.emit('leave_room', { room_code: code, name: userName });
+    socket.emit('leave_room', { room_code: code, user_id: userId });
     localStorage.clear();
     router.push('/');
   }
 
   useEffect(() => {
-  const fetchInitialRoom = async () => {
-    try {
-      const data = await getRoomDetails(code as string);
-      handleRoomData(data);
-    } catch (err) {
-      console.error('Failed to fetch room:', err);
-    }
-  };
+    const fetchInitialRoom = async () => {
+      try {
+        const data = await getRoomDetails(code as string);
+        handleRoomData(data);
+      } catch (err) {
+        console.error('Failed to fetch room:', err);
+      }
+    };
 
-  fetchInitialRoom();
-}, [code]);
+    fetchInitialRoom();
+  }, [code]);
 
   useRoomSocket({
     code: code as string,
@@ -127,7 +128,7 @@ export default function RoomPage() {
           onClick={() => selectSong(song)}
         >
           <Typography>
-            {song.name.replace(/_/g, ' ')} – {song.singer}
+            {song.name.replace(/_/g, ' ')} - {song.singer}
           </Typography>
         </Paper>
       ))}
@@ -174,7 +175,7 @@ export default function RoomPage() {
             </Paper>
           ))}
   
-          {isAdmin ? adminPanel :  participantPanel}
+          {isAdmin ? adminPanel : participantPanel}
         </Paper>
       </Box>
     </Container>

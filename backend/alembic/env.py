@@ -8,7 +8,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.database import Base
-from app.models import Room, Song, Person
+from app.tables import Room, Song, Person
 
 from dotenv import load_dotenv
 load_dotenv()

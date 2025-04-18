@@ -1,7 +1,7 @@
 # reset_db.py
 
 from database import Base, engine
-from models import Room, Person, Song
+from tables import Room, Person, Song
 
 print("🔄 Dropping all tables...")
 Base.metadata.drop_all(bind=engine)

@@ -1,26 +1,35 @@
-from sqlalchemy import Column, Integer, String, JSON, ForeignKey
-from .database import Base
+from typing import List, Optional
+from pydantic import BaseModel
 
-class Room(Base):
-    __tablename__ = "rooms"
-    id = Column(Integer, primary_key=True, index=True)
-    room_code = Column(String, unique=True, index=True)
-    admin = Column(String)
-    current_song_id = Column(Integer, nullable=True)
+class CreateRoomRequest(BaseModel):
+    name: str
+    instrument: str
+    sid: Optional[str] = None # can i remove it?
 
-class Song(Base):
-    __tablename__ = "songs"
-    id = Column(Integer, primary_key=True, index=True)
-    singer = Column(String)
-    name = Column(String)
-    content = Column(JSON)
+class JoinRoomRequest(BaseModel):
+    name: str
+    instrument: str
 
-class Person(Base):
-    __tablename__ = "people"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    instrument = Column(String)
-    room_code = Column(String, ForeignKey('rooms.room_code'))
-    role = Column(String) 
+class PersonResponse(BaseModel):
+    id: int
+    name: str
+    instrument: str
+    role: str
 
+    class Config:
+        from_attributes = True
 
+class RoomResponse(BaseModel):
+    room_code: str
+    admin: str
+    current_song_id: Optional[int] = None
+    people: List[PersonResponse] = []
+
+    class Config:
+        from_attributes = True
+
+class SongSelection(BaseModel):
+    title: str
+    artist: str
+    lyrics: str
+    chords: str

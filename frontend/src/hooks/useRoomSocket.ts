@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect } from 'react';
 import { socketManager } from '@/utils/socket';
 import { getRoomDetails } from '@/utils/api';

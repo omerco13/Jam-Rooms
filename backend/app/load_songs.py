@@ -1,4 +1,4 @@
-from models import Song
+from tables import Song
 from database import db_session
 import json
 import os

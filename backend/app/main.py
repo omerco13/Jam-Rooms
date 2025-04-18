@@ -1,11 +1,13 @@
-from fastapi import FastAPI, HTTPException, Depends, Query
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.models import Room, Person, Song
-from app.schemas import CreateRoomRequest
+from app.tables import Song
+from app.models import CreateRoomRequest
 from app.database import get_db
 from sqlalchemy.orm import Session
-from app.song_search import search_songs_by_query
+from app.bll.song_bll import SongBLL
+from app.bll.room_bll import RoomBLL
+from app.bll.person_bll import PersonBLL
 import socketio
 from app.socket_manager import sio
 import random, string
@@ -28,13 +30,10 @@ app.add_middleware(
 @app.post("/rooms/")
 async def create_room(request: CreateRoomRequest, db: Session = Depends(get_db)):
     room_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
-    new_room = Room(room_code=room_code, admin=request.name)
-    db.add(new_room)
-    db.commit()
-    db.refresh(new_room)
-    new_person = Person(name=request.name, instrument=request.instrument, room_code=room_code, role='admin')
-    db.add(new_person)
-    db.commit()
+    RoomBLL(db).create_room(room_code, request.name)
+    new_person = PersonBLL(db).add_person(
+    name=request.name, instrument=request.instrument, room_code=room_code, role="admin"
+    )
 
     if request.sid:
         await sio.enter_room(request.sid, room_code)
@@ -46,30 +45,17 @@ async def create_room(request: CreateRoomRequest, db: Session = Depends(get_db))
 
 @app.get("/rooms/")
 def get_rooms(db: Session = Depends(get_db)):
-    rooms = db.query(Room).all()
+    rooms = RoomBLL(db).get_all_rooms()
     return {"rooms": [room.room_code for room in rooms]}
 
 @app.get("/rooms/{room_code}")
-def get_room_details(
-    room_code: str,
-    db: Session = Depends(get_db),
-    user_id: int = Query(None)
-):
-    room = db.query(Room).filter(Room.room_code == room_code).first()
-    participants = db.query(Person).filter(Person.room_code == room_code).all()
+def get_room_details(room_code: str, db: Session = Depends(get_db)):
+    room = RoomBLL(db).get_room(room_code)
+    participants = PersonBLL(db).get_participants_by_room(room_code)
     people = [{"id": p.id, "name": p.name, "instrument": p.instrument, "role": p.role} for p in participants]
-    me = None
-    person = db.query(Person).filter(Person.id == user_id, Person.room_code == room_code).first()
-    if person:
-        me = {
-            "id": person.id,
-            "name": person.name,
-            "instrument": person.instrument,
-            "role": person.role
-        }
     current_song = None
     if room.current_song_id:
-        song = db.query(Song).filter(Song.id == room.current_song_id).first()
+        song = SongBLL(db).get_song_by_id(room.current_song_id)
         if song:
             current_song = {
                 "id": song.id,
@@ -81,14 +67,32 @@ def get_room_details(
         "room_code": room.room_code,
         "current_song_id": room.current_song_id,
         "people": people,
-        "me": me,
         "current_song": current_song
     }
 
 @app.get("/songs/search")
-def search_songs(q: str):
-    results = search_songs_by_query(q)
+def search_songs(q: str, db: Session = Depends(get_db)):
+    songs = SongBLL(db).search_songs(q)
+    results = [
+        {
+            "id": song.id,
+            "name": song.name,
+            "singer": song.singer,
+            "content": song.content
+        }
+        for song in songs
+    ]
     return JSONResponse(content={"results": results})
+
+@app.get("/songs/{song_id}")
+def get_song_by_id(song_id: int, db: Session = Depends(get_db)):
+    song = SongBLL(db).get_song_by_id(song_id)
+    return {
+        "id": song.id,
+        "name": song.name,
+        "singer": song.singer,
+        "content": song.content
+    }
 
 @app.get("/")
 def read_root():

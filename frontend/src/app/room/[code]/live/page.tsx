@@ -16,6 +16,7 @@ export default function LivePage() {
   const userNameParam = searchParams.get('name');
   const router = useRouter();
 
+  const [song, setSong] = useState<Song | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const isRedirectingRef = useRef(false);
 
@@ -25,38 +26,53 @@ export default function LivePage() {
     );
   };
 
-  const [song] = useState<Song | null>(() => {
-    const selected = localStorage.getItem('selectedSong');
-    return selected ? JSON.parse(selected) : null;
-  });
-
-  if (!song) {
-    redirectToRoom();
-    return null;
-  }
-
   const handleStopLive = () => {
     if (isRedirectingRef.current) return;
 
     isRedirectingRef.current = true;
     const socket = socketManager.getSocket() ?? socketManager.connect();
     socket?.emit('close_song', code);
-    localStorage.removeItem('selectedSong');
+    localStorage.removeItem('selectedSongId');
     redirectToRoom();
   };
 
   const fetchRole = async () => {
-    if (!code || !userIdParam) return;
 
     try {
       const res = await fetch(`${API_URL}/rooms/${code}?user_id=${userIdParam}`);
       const data = await res.json();
-      const me: Person | undefined = data.me;
+      const me = data.people.find((p: Person) => String(p.id) === userIdParam);
       setIsAdmin(me?.role === 'admin');
     } catch (err) {
       console.error('Failed to fetch room:', err);
     }
   };
+
+ 
+
+  useEffect(() => {
+    const songId = localStorage.getItem('selectedSongId');
+    if (!songId) {
+      redirectToRoom();
+      return;
+    }
+  
+    async function fetchSong() {
+      try {
+        const res = await fetch(`${API_URL}/songs/${songId}`);
+        if (!res.ok) {
+          throw new Error('Song not found');
+        }
+        const data = await res.json();
+        setSong(data);
+      } catch (err) {
+        console.error('Failed to fetch song:', err);
+        redirectToRoom();
+      }
+    }
+  
+    fetchSong();
+  }, []);
 
   useEffect(() => {
     fetchRole();
@@ -68,7 +84,7 @@ export default function LivePage() {
     const handleSongOver = () => {
       if (isRedirectingRef.current) return;
       isRedirectingRef.current = true;
-      localStorage.removeItem('selectedSong');
+      localStorage.removeItem('selectedSongId');
       redirectToRoom();
     };
 
@@ -79,6 +95,11 @@ export default function LivePage() {
       isRedirectingRef.current = false;
     };
   }, [code, router]);
+
+  if (!song) {
+    return null;
+  }
+  
 
   return (
     <Container maxWidth="md">
