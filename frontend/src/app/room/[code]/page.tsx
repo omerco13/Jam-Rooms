@@ -16,6 +16,8 @@ export default function RoomPage() {
   const userName = useSearchParams().get('name');
   const instrument = useSearchParams().get('instrument');
 
+  const parsedUserId = userId ? parseInt(userId, 10) : null;
+
   const [room, setRoom] = useState<RoomDetails | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [query, setQuery] = useState('');
@@ -28,7 +30,7 @@ export default function RoomPage() {
 
   const handleRoomData = (data: RoomDetails) => {
     setRoom(data);
-    const me = data.people.find((p) => String(p.id) === userId);
+    const me = data.people.find((p) => p.id === parsedUserId);
     setIsAdmin(me?.role === 'admin');
   };
   
@@ -69,7 +71,7 @@ export default function RoomPage() {
 
   function handleLeaveRoom() {
     const socket = socketManager.getSocket() ?? socketManager.connect();
-    socket.emit('leave_room', { room_code: code, user_id: userId });
+    socket.emit('leave_room', { room_code: code, user_id: parsedUserId });
     localStorage.clear();
     router.push('/');
   }
@@ -89,6 +91,9 @@ export default function RoomPage() {
 
   useRoomSocket({
     code: code as string,
+    userId: parsedUserId,
+    userName: userName as string,
+    instrument: instrument as string,
     onRoomData: handleRoomData,
     onSongSelected: handleSongSelected,
     onRoomClosed: handleRoomClosed,

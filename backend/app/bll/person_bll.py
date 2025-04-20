@@ -6,6 +6,9 @@ class PersonBLL:
     def __init__(self, db: Session):
         self.person_dal = PersonDAL(db)
 
+    def get_person_by_id(self, user_id: int):
+        return self.person_dal.get_person_by_id(user_id)
+
     def add_person(self, name: str, instrument: str, room_code: str, role: str):
         return self.person_dal.add_person(name, instrument, room_code, role)
 

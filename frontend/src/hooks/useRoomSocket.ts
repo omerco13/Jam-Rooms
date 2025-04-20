@@ -2,15 +2,21 @@
 
 import { useEffect } from 'react';
 import { socketManager } from '@/utils/socket';
-import { getRoomDetails } from '@/utils/api';
+import { RoomDetails } from '@/types';
 
 export function useRoomSocket({
   code,
+  userId,
+  userName,
+  instrument,
   onRoomData,
   onSongSelected,
   onRoomClosed,
 }: {
   code: string;
+  userId: number | null,
+  userName: string,
+  instrument: string,
   onRoomData: (room: any) => void;
   onSongSelected: () => void;
   onRoomClosed: () => void;
@@ -18,13 +24,19 @@ export function useRoomSocket({
   useEffect(() => {
     const socket = socketManager.getSocket() ?? socketManager.connect();
 
-    const handleParticipantsUpdated = async() => {
-        try {
-          const data = await getRoomDetails(code);
-          onRoomData(data);
-        } catch (err) {
-          console.error('Error updating participants:', err);
-        }
+    const handleConnect = () => {
+      socket.emit('join_room', {
+        room_code: code,
+        user_id: userId,
+        name: userName,
+        instrument: instrument,
+      });
+    };
+  
+    socket.on('connect', handleConnect);
+
+    const handleParticipantsUpdated = (data: RoomDetails) => {
+      onRoomData(data);
     };
 
     const handleSongSelected = () => {
@@ -40,10 +52,11 @@ export function useRoomSocket({
     socket.on('close_room', handleRoomClosed);
 
     return () => {
+      socket.off('connect', handleConnect);
       socket.off('participants_updated', handleParticipantsUpdated);
       socket.off('song_selected', handleSongSelected);
       socket.off('close_room', handleRoomClosed);
     };
-  }, [code]);
+  }, [code, userName, instrument]);
 }
 
