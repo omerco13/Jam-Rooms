@@ -1,14 +1,16 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function getRooms() {
-  try {
+  // try
+  //  {
     const response = await fetch(`${API_URL}/rooms/`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    return await response.json();
-  } catch (error) {
-    console.error('Rooms fetch error:', error);
-    throw error;
-  }
+    return response.json();
+  // } 
+  // catch (error) {
+  //   console.error('Rooms fetch error:', error);
+  //   throw error;
+  // }
 }
 
 export async function getRoomDetails(roomCode: string) {

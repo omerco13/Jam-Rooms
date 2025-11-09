@@ -33,3 +33,6 @@ class SongSelection(BaseModel):
     artist: str
     lyrics: str
     chords: str
+
+    # class Config:
+    #     from_attributes = True

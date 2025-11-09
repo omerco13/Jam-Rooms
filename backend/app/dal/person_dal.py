@@ -7,8 +7,8 @@ class PersonDAL:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_person_by_id(self, user_id: int):
-        return self.db.query(Person).filter_by(id=user_id).first()
+    # def get_person_by_id(self, user_id: int):
+    #     return self.db.query(Person).filter_by(id=user_id).first()
 
     def add_person(self, name: str, instrument: str, room_code: str, role: str) -> Person:
         new_person = Person(

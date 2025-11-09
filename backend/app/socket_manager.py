@@ -2,7 +2,7 @@ import socketio
 from app.database import db_session
 from app.bll.room_bll import RoomBLL
 from app.bll.person_bll import PersonBLL
-from app.bll.song_bll import SongBLL  # <--- IMPORTANT: you need to import SongBLL too!
+from app.bll.song_bll import SongBLL
 
 sio = socketio.AsyncServer(
     async_mode='asgi',
