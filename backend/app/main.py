@@ -11,6 +11,10 @@ from app.bll.person_bll import PersonBLL
 import socketio
 from app.socket_manager import sio
 import random, string
+
+from contextlib import asynccontextmanager
+from app.database import engine
+from app.tables import Base
 app = FastAPI()
 
 app.add_middleware(
@@ -98,5 +102,10 @@ def get_song_by_id(song_id: int, db: Session = Depends(get_db)):
 def read_root():
     return {"message": "Welcome to JaMoveo API"}
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Run at startup
+    Base.metadata.create_all(bind=engine)
+    yield
 app = socketio.ASGIApp(sio, other_asgi_app=app)
 
