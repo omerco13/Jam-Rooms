@@ -1,10 +1,11 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.tables import Song
-from app.models import CreateRoomRequest
-from app.database import get_db
 from sqlalchemy.orm import Session
+
+from app.models import CreateRoomRequest
+from app.database import get_db, engine
+
 from app.bll.song_bll import SongBLL
 from app.bll.room_bll import RoomBLL
 from app.bll.person_bll import PersonBLL
@@ -12,9 +13,8 @@ import socketio
 from app.socket_manager import sio
 import random, string
 
-from contextlib import asynccontextmanager
-from app.database import engine
-from app.tables import Base
+
+from app.tables import Base, Song, Room, Person
 app = FastAPI()
 
 app.add_middleware(
@@ -102,10 +102,6 @@ def get_song_by_id(song_id: int, db: Session = Depends(get_db)):
 def read_root():
     return {"message": "Welcome to JaMoveo API"}
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Run at startup
-    Base.metadata.create_all(bind=engine)
-    yield
-app = socketio.ASGIApp(sio, other_asgi_app=app)
+Base.metadata.create_all(bind=engine)
+app = socketio.ASGIApp(sio, other_asgi_app=app, socketio_path="socket.io")
 
