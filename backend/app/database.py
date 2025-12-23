@@ -8,7 +8,15 @@ from contextlib import contextmanager
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-engine = create_engine(DATABASE_URL)
+# Create engine with connection pooling configuration
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=10,              # Number of connections to keep in pool
+    max_overflow=20,           # Additional connections when pool is full
+    pool_pre_ping=True,        # Verify connections before using
+    pool_recycle=3600,         # Recycle connections after 1 hour
+    echo=False                 # Set to True for SQL query logging (development only)
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

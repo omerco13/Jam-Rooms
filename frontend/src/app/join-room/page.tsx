@@ -2,22 +2,23 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { socketManager } from '@/utils/socket';
+import { getOrConnectSocket } from '@/utils/socket';
 import {
   Container, Box, Typography, Button, FormControl, InputLabel,
   Select, MenuItem, Paper, TextField
 } from '@mui/material';
 import { getRooms } from '@/utils/api';
-
-const instruments = ['Guitar', 'Piano', 'Bass', 'Drums', 'Singer'];
+import { InstrumentSelect } from '@/components/InstrumentSelect';
 
 export default function JoinRoomPage() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [instrument, setInstrument] = useState('');
   const [roomCode, setRoomCode] = useState('');
+  const [password, setPassword] = useState('');
   const [availableRooms, setAvailableRooms] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
 
   const handleJoinedRoom = useCallback((data: { user_id: number }) => {
@@ -26,13 +27,18 @@ export default function JoinRoomPage() {
     );
   }, [name, instrument, roomCode, router]);
 
+  const handleError = useCallback((data: { message: string }) => {
+    setError(data.message);
+  }, []);
 
   const handleJoinRoom = () => {
-    const socket = socketManager.getSocket() ?? socketManager.connect();
+    setError(''); // Clear previous errors
+    const socket = getOrConnectSocket();
     socket.emit('join_room', {
       room_code: roomCode,
       name,
       instrument,
+      password,
     });
   };
 
@@ -42,8 +48,9 @@ export default function JoinRoomPage() {
       try {
         const data = await getRooms();
         setAvailableRooms(data.rooms);
-      } catch (error) {
-        console.error('Error fetching rooms:', error);
+      } catch (err) {
+        console.error('Error fetching rooms:', err);
+        setError('Failed to load available rooms. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -53,12 +60,14 @@ export default function JoinRoomPage() {
 
 
   useEffect(() => {
-    const socket = socketManager.getSocket() ?? socketManager.connect();
+    const socket = getOrConnectSocket();
     socket.on('joined_room', handleJoinedRoom);
+    socket.on('error', handleError);
     return () => {
       socket.off('joined_room', handleJoinedRoom);
+      socket.off('error', handleError);
     };
-  }, [handleJoinedRoom]);
+  }, [handleJoinedRoom, handleError]);
 
   return (
     <Container maxWidth="sm">
@@ -78,6 +87,12 @@ export default function JoinRoomPage() {
             Enter your details and join a room
           </Typography>
 
+          {error && (
+            <Typography color="error" align="center" sx={{ mb: 3 }}>
+              {error}
+            </Typography>
+          )}
+
           <TextField
             fullWidth
             label="Enter your name"
@@ -86,20 +101,12 @@ export default function JoinRoomPage() {
             sx={{ mb: 4 }}
           />
 
-          <FormControl fullWidth sx={{ mb: 4 }}>
-            <InputLabel>Select your instrument</InputLabel>
-            <Select
-              value={instrument}
-              label="Select your instrument"
-              onChange={(e) => setInstrument(e.target.value)}
-            >
-              {instruments.map((inst) => (
-                <MenuItem key={inst} value={inst}>
-                  {inst}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <InstrumentSelect
+            value={instrument}
+            onChange={setInstrument}
+            label="Select your instrument"
+            sx={{ mb: 4 }}
+          />
 
           <FormControl fullWidth sx={{ mb: 4 }}>
             <InputLabel>Select a room</InputLabel>
@@ -119,14 +126,24 @@ export default function JoinRoomPage() {
               ))}
             </Select>
           </FormControl>
-          
+
+          <TextField
+            fullWidth
+            label="Room Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            sx={{ mb: 4 }}
+            helperText="Enter the password for this room"
+          />
+
           <Button
             variant="contained"
             color="primary"
             size="large"
             fullWidth
             onClick={handleJoinRoom}
-            disabled={!instrument || !roomCode || !name}
+            disabled={!instrument || !roomCode || !name || !password}
             sx={{ py: 2 }}
           >
             Join Room

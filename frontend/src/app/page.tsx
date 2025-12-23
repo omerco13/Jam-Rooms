@@ -2,7 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { Container, Box, Typography, Button } from '@mui/material';
-import { MusicNote as MusicNoteIcon, Group as GroupIcon } from '@mui/icons-material';
+import dynamic from 'next/dynamic';
+
+// Lazy load MUI icons - they are heavy (~500KB)
+const MusicNoteIcon = dynamic(() => import('@mui/icons-material/MusicNote'));
+const GroupIcon = dynamic(() => import('@mui/icons-material/Group'));
 
 export default function HomePage() {
     const router = useRouter();

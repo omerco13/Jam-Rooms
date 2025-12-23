@@ -1,28 +1,33 @@
 'use client';
 
-import { socketManager } from '@/utils/socket';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { getOrConnectSocket } from '@/utils/socket';
+import { getRoomDetails } from '@/utils/api';
+import { useParams, useRouter } from 'next/navigation';
 import { useRef, useEffect, useState } from 'react';
 import { Container, Box, Paper, Typography, Button } from '@mui/material';
 import { Person, Song} from '@/types';
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { useRoomParams } from '@/hooks/useRoomParams';
+import { ErrorMessage } from '@/components/ErrorMessage';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 
 export default function LivePage() {
   const { code } = useParams();
-  const searchParams = useSearchParams();
-  const userIdParam = searchParams.get('user_id');
-  const instrumentParam = searchParams.get('instrument');
-  const userNameParam = searchParams.get('name');
   const router = useRouter();
+  const { userId: parsedUserId, userName: userNameParam, instrument: instrumentParam, isValid, error: paramError } = useRoomParams();
 
   const [song, setSong] = useState<Song | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
   const isRedirectingRef = useRef(false);
+
+  // Check for parameter validation errors
+  if (!isValid && paramError) {
+    return <ErrorMessage message={paramError} maxWidth="md" />;
+  }
 
   const redirectToRoom = () => {
     router.push(
-      `/room/${code}?user_id=${userIdParam}&instrument=${instrumentParam}&name=${encodeURIComponent(userNameParam ?? '')}`
+      `/room/${code}?user_id=${parsedUserId}&instrument=${instrumentParam}&name=${encodeURIComponent(userNameParam ?? '')}`
     );
   };
 
@@ -30,61 +35,46 @@ export default function LivePage() {
     if (isRedirectingRef.current) return;
 
     isRedirectingRef.current = true;
-    const socket = socketManager.getSocket() ?? socketManager.connect();
-    socket?.emit('close_song', code);
-    localStorage.removeItem('selectedSongId');
+    const socket = getOrConnectSocket();
+    socket?.emit('close_song', { room_code: code, user_id: parsedUserId });
     redirectToRoom();
   };
 
-  const fetchRole = async () => {
-
-    try {
-      const res = await fetch(`${API_URL}/rooms/${code}?user_id=${userIdParam}`);
-      const data = await res.json();
-      const me = data.people.find((p: Person) => String(p.id) === userIdParam);
-      setIsAdmin(me?.role === 'admin');
-    } catch (err) {
-      console.error('Failed to fetch room:', err);
-    }
-  };
-
- 
-
+  // Fetch room data to get current song and admin role
   useEffect(() => {
-    const songId = localStorage.getItem('selectedSongId');
-    if (!songId) {
-      redirectToRoom();
-      return;
-    }
-  
-    async function fetchSong() {
+    const fetchInitialData = async () => {
       try {
-        const res = await fetch(`${API_URL}/songs/${songId}`);
-        if (!res.ok) {
-          throw new Error('Song not found');
+        const data = await getRoomDetails(code as string);
+
+        // If no song is selected, redirect back to room
+        if (!data.current_song) {
+          console.log('[LivePage] No current song, redirecting to room');
+          redirectToRoom();
+          return;
         }
-        const data = await res.json();
-        setSong(data);
+
+        // Set song and admin status
+        setSong(data.current_song);
+
+        const me = data.people.find((p: Person) => p.id === parsedUserId);
+        setIsAdmin(me?.role === 'admin');
       } catch (err) {
-        console.error('Failed to fetch song:', err);
+        console.error('Failed to fetch initial data:', err);
         redirectToRoom();
+      } finally {
+        setLoading(false);
       }
-    }
-  
-    fetchSong();
+    };
+
+    fetchInitialData();
   }, []);
 
   useEffect(() => {
-    fetchRole();
-  }, [code, userIdParam]);
-
-  useEffect(() => {
-    const socket = socketManager.getSocket() ?? socketManager.connect();
+    const socket = getOrConnectSocket();
 
     const handleSongOver = () => {
       if (isRedirectingRef.current) return;
       isRedirectingRef.current = true;
-      localStorage.removeItem('selectedSongId');
       redirectToRoom();
     };
 
@@ -95,6 +85,10 @@ export default function LivePage() {
       isRedirectingRef.current = false;
     };
   }, [code, router]);
+
+  if (loading) {
+    return <LoadingSpinner message="Loading song..." maxWidth="md" />;
+  }
 
   if (!song) {
     return null;

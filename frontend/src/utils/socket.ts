@@ -5,6 +5,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 class SocketManager {
   private static instance: SocketManager;
   private socket: Socket | null = null;
+  private joinedRooms: Set<string> = new Set();
 
   private constructor() {}
 
@@ -53,7 +54,25 @@ class SocketManager {
     if (this.socket) {
       this.socket.disconnect();
       this.socket = null;
+      this.joinedRooms.clear();
     }
+  }
+
+  hasJoinedRoom(roomCode: string): boolean {
+    return this.joinedRooms.has(roomCode);
+  }
+
+  markRoomAsJoined(roomCode: string): void {
+    this.joinedRooms.add(roomCode);
+  }
+
+  leaveRoomTracking(roomCode: string): void {
+    this.joinedRooms.delete(roomCode);
   }
 }
 export const socketManager = SocketManager.getInstance();
+
+// Helper function to get or connect socket
+export function getOrConnectSocket() {
+  return socketManager.getSocket() ?? socketManager.connect();
+}

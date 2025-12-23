@@ -4,11 +4,16 @@ from pydantic import BaseModel
 class CreateRoomRequest(BaseModel):
     name: str
     instrument: str
-    sid: Optional[str] = None # can i remove it?
+    password: str
+
+class CreateRoomResponse(BaseModel):
+    room_code: str
+    user_id: int
 
 class JoinRoomRequest(BaseModel):
     name: str
     instrument: str
+    password: str
 
 class PersonResponse(BaseModel):
     id: int
@@ -19,20 +24,20 @@ class PersonResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class RoomResponse(BaseModel):
-    room_code: str
-    admin: str
-    current_song_id: Optional[int] = None
-    people: List[PersonResponse] = []
+class SongResponse(BaseModel):
+    id: int
+    name: str
+    singer: str
+    content: list
 
     class Config:
         from_attributes = True
 
-class SongSelection(BaseModel):
-    title: str
-    artist: str
-    lyrics: str
-    chords: str
+class RoomDetailsResponse(BaseModel):
+    room_code: str
+    current_song_id: Optional[int] = None
+    people: List[PersonResponse]
+    current_song: Optional[SongResponse] = None
 
-    # class Config:
-    #     from_attributes = True
+class SearchSongsResponse(BaseModel):
+    results: List[SongResponse]

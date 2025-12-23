@@ -7,8 +7,8 @@ class RoomDAL:
     def __init__(self, db: Session):
         self.db = db
 
-    def create_room(self, room_code: str, admin_name: str) -> Room:
-        new_room = Room(room_code=room_code, admin=admin_name)
+    def create_room(self, room_code: str, admin_name: str, password: str) -> Room:
+        new_room = Room(room_code=room_code, admin=admin_name, password=password)
         self.db.add(new_room)
         self.db.commit()
         self.db.refresh(new_room)
