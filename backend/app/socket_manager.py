@@ -17,6 +17,9 @@ sio = socketio.AsyncServer(
     cors_allowed_origins=cors_origins
 )
 
+# Track socket sessions: {sid: {"user_id": int, "room_code": str}}
+socket_sessions = {}
+
 async def emit_full_room_update(room_code: str):
     with db_session() as db:
         room = RoomBLL(db).get_room(room_code)
@@ -80,6 +83,10 @@ async def join_room(sid, room_data):
 
     # IMPORTANT: Enter room and emit OUTSIDE db_session to avoid connection issues
     await sio.enter_room(sid, room_code)
+
+    # Track this socket session for disconnect handling
+    socket_sessions[sid] = {"user_id": user_id, "room_code": room_code}
+
     await sio.emit("joined_room", {"user_id": user_id}, to=sid)
     await emit_full_room_update(room_code)
 
@@ -89,6 +96,10 @@ async def leave_room(sid, room_data):
     person_id = room_data.get("user_id")
 
     await sio.leave_room(sid, room_code)
+
+    # Clean up session tracking
+    if sid in socket_sessions:
+        del socket_sessions[sid]
 
     with db_session() as db:
         PersonBLL(db).remove_person(person_id)
@@ -157,3 +168,43 @@ async def close_song(sid, room_data):
         RoomBLL(db).clear_current_song(room_code)
 
     await sio.emit('song_over', {}, room=room_code)
+
+@sio.event
+async def disconnect(sid):
+    """Handle user disconnect - clean up database and notify room"""
+    # Check if this socket was tracked
+    if sid not in socket_sessions:
+        return
+
+    session = socket_sessions[sid]
+    user_id = session["user_id"]
+    room_code = session["room_code"]
+
+    # Remove from session tracking
+    del socket_sessions[sid]
+
+    with db_session() as db:
+        person_bll = PersonBLL(db)
+        room_bll = RoomBLL(db)
+
+        # Get the person who disconnected
+        person = person_bll.get_person_by_id(user_id)
+        if not person:
+            return
+
+        # Check if they were the admin
+        is_admin = person.role == 'admin'
+
+        if is_admin:
+            # Admin disconnected - close the entire room
+            person_bll.remove_all_by_room(room_code)
+            room_bll.delete_room(room_code)
+
+            # Notify all participants that room is closed
+            await sio.emit('room_closed', {}, room=room_code)
+        else:
+            # Regular participant disconnected - just remove them
+            person_bll.remove_person(user_id)
+
+            # Update remaining participants
+            await emit_full_room_update(room_code)
