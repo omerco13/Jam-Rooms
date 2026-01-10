@@ -84,7 +84,6 @@ export default function CreateRoomPage() {
               fullWidth
               required
               disabled={loading}
-              helperText="Participants will need this password to join"
             />
 
             <Button

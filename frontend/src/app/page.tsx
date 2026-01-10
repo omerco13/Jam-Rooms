@@ -21,7 +21,7 @@ export default function HomePage() {
                 gap: 4 
             }}>
                 <Typography variant="h2" component="h1" align="center" gutterBottom>
-                    JaMoveo
+                    JamTogether
                 </Typography>
 
                 <Typography variant="h5" align="center" color="text.secondary" sx={{ mb: 3 }}>
